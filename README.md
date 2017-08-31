@@ -3,9 +3,12 @@
 
 ## Background
 
-[Vagrant](https://www.vagrantup.com/) is used to provision the VM's. 
-[Docker](https://www.docker.com/) is used to build and manage linux containers. 
-[Ansible](http://www.ansible.com/) is used in environment configuration managemnent tasks..
+[Vagrant](https://www.vagrantup.com/) is used to provision the VM's.
+
+[Docker](https://www.docker.com/) is used to build and manage linux containers.
+
+[Ansible](http://www.ansible.com/) is used in environment configuration managemnent tasks.
+
 
 This Vagrant profile uses Ansible provisioner to create a centos 7 VM in virtual box, then it uses Ansible to build the latest alpine nginx docker containers for a simple www web app stack, Docker-style:
 
