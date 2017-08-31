@@ -1,0 +1,15 @@
+---
+- hosts: localhost
+  become: yes
+
+  tasks:
+    - name: Get host IP address.
+      shell: "$(hostname -I | cut -d" " -f 2) "
+      register: host_ip
+      changed_when: false
+
+    - name: Set host_ip_address variable.
+      set_fact:
+        host_ip_address: "{{ host_ip.stdout }}"
+
+    
