@@ -1,0 +1,79 @@
+---
+- hosts: all
+  become: yes
+
+  pre_tasks:
+    - name: upgrade all packages
+      yum:
+        name: '*'
+        state: latest
+      
+    - name: Ensure pre-req is installed
+      yum:
+        name: "{{ item }}"
+        state: latest
+        update_cache: yes
+      with_items:
+        - ca-certificates
+        - curl
+        - epel-release
+        - python
+        - net-tools
+        
+  tasks:
+
+  #  - name: install pip
+  #    command: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
+
+  #  - name: run pip
+  #    command: python get-pip.py
+
+    - name: add Docker repo
+      yum_repository:
+        name: dockerrepo
+        description: EPEL YUM repo
+        baseurl: https://yum.dockerproject.org/repo/main/centos/7/
+        gpgcheck: yes
+        gpgkey: https://yum.dockerproject.org/gpg
+
+    - name: Install Docker Engine
+      yum: pkg={{item}} state=installed
+      with_items:
+        - docker-engine
+
+    - name: Install Pip.
+      yum: name=python-pip state=installed
+      become: yes
+
+    - name: Install Docker Python library.
+      pip: name=docker-py state=present
+      become: yes
+
+    - name: Add vagrant user to docker group.
+      user:
+        name: vagrant
+        groups: docker
+        append: yes
+      become: yes
+
+    - service: 
+        name: docker
+        state: restarted
+    
+    - name: Build Docker images from Dockerfiles.
+      docker_image:
+        name: "{{ item.name }}"
+        tag: "{{ item.tag }}"
+        path: "/vagrant/provisioning/{{ item.directory }}"
+        state: build
+      with_items:
+        - { name: www, tag: "alpine-nginx", directory: www }
+
+    - name: Run a Alpine Nginx container.
+      docker:
+        image: www:alpine-nginx
+        name: www
+        state: running
+        ports: "8080:80"
+        volumes:
+          - /vagrant/provision/www/templates:/usr/share/nginx/html
